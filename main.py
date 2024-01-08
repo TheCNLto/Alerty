@@ -1,20 +1,23 @@
 import time
-from customtkinter import CTk, CTkTabview, CTkLabel, CTkButton, CTkToplevel, CTkEntry, CTkScrollableFrame, END
 from tkinter import BOTH, X, messagebox
+
+from customtkinter import CTk, CTkTabview, CTkLabel, CTkButton, CTkToplevel, CTkEntry, CTkScrollableFrame, END
+from playsound import playsound
 
 
 class alerty_alert(CTkToplevel):
-    def __init__(self, title, about, timed):
+    def __init__(self, info):
         super().__init__()
-        self.title(title)
+        self.minsize(200, 100)
+        self.title(info[0])
         self.lb1 = CTkLabel(
             master=self,
-            text=about
+            text=info[1]
         )
         self.lb1.pack(fill=BOTH, expand=1, padx=20, pady=20)
         self.lb2 = CTkLabel(
             master=self,
-            text=timed
+            text=info[2]
         )
         self.lb2.pack(fill=BOTH, expand=1, padx=20)
         self.btn1 = CTkButton(
@@ -22,6 +25,8 @@ class alerty_alert(CTkToplevel):
             text='Clear alert',
             command=self.clearAlert
         )
+        self.btn1.pack(fill=BOTH, expand=1)
+        playsound("alert.mp3")
 
     def clearAlert(self):
         self.destroy()
@@ -81,6 +86,7 @@ class main(CTk):
             master=self.on_going_tab,
         )
         self.scrollableFrame.pack(fill=BOTH, expand=1)
+        self.minsize(self.winfo_width(), self.winfo_height())
         self.eval('tk::PlaceWindow . center')
         self.checker()
 
@@ -90,8 +96,8 @@ class main(CTk):
         new_datetime = current_datetime + timedelta(minutes=1)
         new_time = time.localtime(time.mktime(new_datetime.timetuple()))"""
         for i in self.alerts:
-            if i <= time.strftime("%H:%M", time.localtime()):
-                alerty_alert(self.alert_title.get(), self.alert_about.get(), i)
+            if i[2] <= time.strftime("%H:%M", time.localtime()):
+                alerty_alert(i)
                 print("time!!!!!")
                 self.alerts.remove(i)
         self.after(200, self.checker)
@@ -103,7 +109,7 @@ class main(CTk):
             if len(storeTime) < 1 or len(storeTitle) < 1 or len(storeAbout) < 1:
                 messagebox.showerror("Error", "You forgot something important!")
             else:
-                self.alerts.append(storeTime)
+                self.alerts.append(tuple((self.alert_title.get(), self.alert_about.get(), self.alert_time.get())))
                 lbCreated = CTkLabel(
                     master=self.scrollableFrame,
                     text=f"{storeTitle}\n{storeAbout}\n{storeTime}"
