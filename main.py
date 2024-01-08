@@ -1,7 +1,6 @@
 import time
-from customtkinter import CTk, CTkTabview, CTkLabel, CTkTextbox, CTkButton, CTkToplevel
+from customtkinter import CTk, CTkTabview, CTkLabel, CTkButton, CTkToplevel, CTkEntry, CTkScrollableFrame, END
 from tkinter import BOTH, X, messagebox
-from datetime import datetime, timedelta
 
 
 class alerty_alert(CTkToplevel):
@@ -42,49 +41,57 @@ class main(CTk):
             master=self.create_tab,
             text="Title of the alert:"
         )
-        self.lb_create_1.pack(fill=X, expand=0)
-        self.alert_title = CTkTextbox(
+        self.lb_create_1.pack(fill=BOTH, expand=1)
+        self.alert_title = CTkEntry(
             master=self.create_tab,
-            height=10
+            height=10,
+            placeholder_text='Something...'
         )
-        self.alert_title.pack(fill=X, expand=0)
+        self.alert_title.pack(fill=BOTH, expand=1)
         self.lb_create_about = CTkLabel(
             master=self.create_tab,
             text="Description of the alert:"
         )
-        self.lb_create_about.pack(fill=X, expand=0)
-        self.alert_about = CTkTextbox(
+        self.lb_create_about.pack(fill=BOTH, expand=1)
+        self.alert_about = CTkEntry(
             master=self.create_tab,
-            height=10
+            height=10,
+            placeholder_text='Some explanation...'
         )
-        self.alert_about.pack(fill=X, expand=0)
+        self.alert_about.pack(fill=BOTH, expand=1)
         self.lb_create_time = CTkLabel(
             master=self.create_tab,
             text="Time of the alert:"
         )
-        self.lb_create_time.pack(fill=X, expand=0)
-        self.alert_time = CTkTextbox(
+        self.lb_create_time.pack(fill=BOTH, expand=1)
+        self.alert_time = CTkEntry(
             master=self.create_tab,
-            height=10
+            height=10,
+            placeholder_text='Like 14:32'
         )
-        self.alert_time.pack(fill=X, expand=0)
+        self.alert_time.pack(fill=BOTH, expand=1)
         self.alert_create_button = CTkButton(
             text="Create timed alert",
             master=self.create_tab,
-            command=self.createTimedAlert
+            command=self.createTimedAlert,
+            corner_radius=50
         )
-        self.alert_create_button.pack(fill=X, expand=0, pady=10)
+        self.alert_create_button.pack(fill=BOTH, expand=1, pady=10)
+        self.scrollableFrame = CTkScrollableFrame(
+            master=self.on_going_tab,
+        )
+        self.scrollableFrame.pack(fill=BOTH, expand=1)
         self.eval('tk::PlaceWindow . center')
         self.checker()
 
     def checker(self):
-        current_time = time.localtime()
+        """current_time = time.localtime()
         current_datetime = datetime.fromtimestamp(time.mktime(current_time))
         new_datetime = current_datetime + timedelta(minutes=1)
-        new_time = time.localtime(time.mktime(new_datetime.timetuple()))
+        new_time = time.localtime(time.mktime(new_datetime.timetuple()))"""
         for i in self.alerts:
-            if i <= time.strftime("%H:%M", new_time):
-                alerty_alert(self.alert_title.get('0.0', 'end'), self.alert_about.get('0.0', 'end'), i)
+            if i <= time.strftime("%H:%M", time.localtime()):
+                alerty_alert(self.alert_title.get(), self.alert_about.get(), i)
                 print("time!!!!!")
                 self.alerts.remove(i)
         self.after(200, self.checker)
@@ -92,13 +99,20 @@ class main(CTk):
     def createTimedAlert(self):
         # print(len(self.alert_title.get("0.0", "end")))
         try:
-            storeTime = self.alert_time.get("0.0", "end")
-            self.alerts.append(storeTime)
-            lbCreated = CTkLabel(
-                master=self.on_going_tab,
-                text=f"{self.alert_title.get('0.0', 'end')}\n{self.alert_about.get('0.0', 'end')}\n{storeTime}"
-            )
-            lbCreated.pack(fill=X, expand=0, pady=20)
+            storeTitle, storeAbout, storeTime = self.alert_title.get(), self.alert_about.get(), self.alert_time.get()
+            if len(storeTime) < 1 or len(storeTitle) < 1 or len(storeAbout) < 1:
+                messagebox.showerror("Error", "You forgot something important!")
+            else:
+                self.alerts.append(storeTime)
+                lbCreated = CTkLabel(
+                    master=self.scrollableFrame,
+                    text=f"{storeTitle}\n{storeAbout}\n{storeTime}"
+                )
+                lbCreated.pack(fill=X, expand=0, pady=20)
+                self.alert_time.delete(first_index=0, last_index=END)
+                self.alert_about.delete(first_index=0, last_index=END)
+                self.alert_title.delete(first_index=0, last_index=END)
+                self.alert_title.focus()
 
             def x1():
                 try:
@@ -110,7 +124,7 @@ class main(CTk):
                     clearBtn.destroy()
 
             clearBtn = CTkButton(
-                master=self.on_going_tab,
+                master=self.scrollableFrame,
                 command=x1,
                 text='Clear'
             )
